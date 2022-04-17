@@ -1,48 +1,55 @@
+from ast import While
 import io
+import sys
 import json
 import socket
 import http.client
+import threading
 import flask
 
 from urllib import request, response
 from multiprocessing import connection
 
 
-proxy_ip = "127.0.0.1"
-proxy_port = 65432
+IP = socket.gethostbyname(socket.gethostname())
+PORT = 5151
+HEADER = 64
+ADDRES = (IP, PORT)
+FORMAT = 'utf-8'
+DISCONNECT_MESSAGE = "!DISCONNECT"
 
 error = {"Success": True, "Status": 405, "Payload": {"ERROR": "SEVER_TIMEOUT", "MESSAGE": "The server's request timed out."}}
+strerror = str(error)
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:   
-    print("Creating a socket...")
-    print("Socket has been created.")
-    s.bind((proxy_ip, proxy_port))
-    s.listen()
-    print("Listening socket...")
-    conn, addr = s.accept()
-        
-    print(f"Got a connection from {addr}")
-    data = conn.recv(1024)
-    print(f"JSON has been recieved {data}")
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+server.bind((ADDRES))
 
-    fix_bytes_value = data.replace(b"'", b'"')
-    my_json = json.load(io.BytesIO(fix_bytes_value))
+def client_handle(conn, addr):
+    print(f"[NEW CONNECTION] {addr} connected.")
+    connected = True
+    while connected:
+        msg_length = conn.recv(HEADER).decode(FORMAT)
+        if msg_length:
+            msg_length = int(msg_length)
+            msg = conn.recv(msg_length).decode(FORMAT)
+            if msg == DISCONNECT_MESSAGE:
+                connected = False
 
-    try:
-        connection = http.client.HTTPSConnection(my_json['body']['path'], timeout = my_json['body']['Timeout'])
-        connection.request(my_json['body']['method'], '/')
-    except connection.request.Timeout():
-        conn.send(bytes(error, encoding= 'utf-8'))
-     
-    response = flask.Response(status=201)
-    strvalue = str(response)
-    print(f"Status: {response.status}")
-    
+            print(f"[{addr}] {msg}")
 
-    print("Sending response...")
-    conn.send(bytes(strvalue, encoding= 'utf-8'))
-    print("Request sent.")
+    conn.close()
 
-print("Closing socket...")
-s.close()
+def start():
+    server.listen()
+    print(f"[LISTENING] Server is listening on {IP}")
+    while True:
+        conn, addr = server.accept()
+        thread = threading.Thread(target=client_handle, args=(conn, addr))
+        thread.start()
+        print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
+
+
+print("[STARTING] Server is starting...")
+start()
+
 
