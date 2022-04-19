@@ -1,8 +1,6 @@
 import socket
 import json
 
-from Server import HEADER
-
 
 IP = socket.gethostbyname(socket.gethostname())
 PORT = 5151
