@@ -7,13 +7,13 @@ from requests import request
 
 IP = socket.gethostbyname(socket.gethostname())
 HOST = 5151
-BUFFER_SIZE = 1024
+BUFFER_SIZE = 100000
 ADDRESS = (IP, HOST)
 FORMAT = 'utf-8'
 
 authtoken = 'og00209'
 
-json_error = { 'Success': False, 'Status': 401, 'Payload': { 'ERROR': 'UNAUTHORIZED', 'MESSAGE': "Used an unauthorized token in the request." } }
+json_error = {'success': False, 'Status': 401, 'Payload': { 'ERROR': 'UNAUTHORIZED', 'MESSAGE': "Used an unauthorized token in the request." }}
 error = json.dumps(json_error)
 error_bytes = str.encode(error)
 
@@ -21,11 +21,9 @@ authpass_json = {'success': True, 'status': 200, 'payload': { 'Message': 'Authen
 authpass = json.dumps(authpass_json)
 authpass_bytes = str.encode(authpass)
 
-bad_request_json = { 'success': False, 'status': 400, 'payload': { 'error': 'BAD_REQUEST', 'message': 'Incorrect properties in request'} } 
+bad_request_json = {'success': False, 'status': 400, 'payload': { 'error': 'BAD_REQUEST', 'message': 'Incorrect properties in request'}} 
 bad_request = json.dumps(bad_request_json)
 bad_request_bytes = str.encode(bad_request)
-
-
 
 
 UDPServer = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -73,14 +71,18 @@ try:
 
                         response = connection.getresponse()
 
-                        success_json = {'id': request_json[0]['body']['id'] ,'success': True, 'status': 200, 'payload': { 'content': str(response.read()) ,'requests': None }}
+                        if(199 < response.status < 300):
+                                success = True
+
+                        elif(399 < response.status < 500):
+                                success = False
+
+                        success_json = {'id': request_json[0]['body']['id'] ,'success': success, 'status': str(response.status), 'payload': { 'content': str(response.read()) ,'requests': None }}
                         success_str = json.dumps(success_json) 
                         success_bytes = str.encode(success_str)
 
-                        
+                        UDPServer.sendto(success_bytes, address)
 
-                        
-                        
-                        
+                                                
 except socket.timeout:
         print("405 - Server Timeout.")
