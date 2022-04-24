@@ -1,5 +1,4 @@
-from cgi import print_form
-import http.client
+import http.client 
 import json
 import socket
 
@@ -28,46 +27,60 @@ bad_request_bytes = str.encode(bad_request)
 
 
 
+
 UDPServer = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 UDPServer.bind(ADDRESS)
 UDPServer.settimeout(20)
 print("Server up and listening")
 
-try:
+
+try: 
        while(True):
-                
                 bytesAddressPair = UDPServer.recvfrom(BUFFER_SIZE)
                 message = bytesAddressPair[0].decode(FORMAT)
                 address = bytesAddressPair[1]
 
-                clientMsg = "Message from Client: {}".format(message)
+                clientMsg = "Request from Client: {}".format(message)
                 clientIP  = "Client IP Address: {}".format(address)
 
                 print(clientMsg)
                 print(clientIP)
-
-                my_json = json.loads(message)
-                connection = http.client.HTTPSConnection(my_json[0]['body']['path'], timeout = my_json[0]['body']['Timeout'])
+                request_json = json.loads(message)
                         
-                if(my_json[1]['Body']['token'] == None):
-                        UDPServer.sendto(bad_request_bytes, address) 
+                
+                try:
+                        connection = http.client.HTTPSConnection(request_json[0]['body']['path'], timeout = request_json[0]['body']['Timeout'])
+                        if(request_json[0]['body']['path'] == None or request_json[1]['Body']['token'] == None):
+                                continue
+                                     
+                except KeyError:
+                        UDPServer.sendto(bad_request_bytes, address)
+                        break
 
-                elif(my_json[1]['Body']['token'] != authtoken):
+                if(request_json[1]['Body']['token'] == ''):
+                        connected_clients = {'Address': address[0], 'login': 0}
+                        connection.request(request_json[0]['body']['method'], request_json[0]['body']['parameters'])
+                                
+                        print(connected_clients)
+                
+                elif(request_json[1]['Body']['token'] != authtoken):
                         UDPServer.sendto(error_bytes, address)
                         print("Authentication token is incorrect. Please use a correct token.")
                         
 
-                elif(my_json[1]['Body']['token'] == authtoken):
-                        connection.request(my_json[0]['body']['method'], my_json[0]['body']['parameters'])
+                elif(request_json[1]['Body']['token'] == authtoken):
+                        connection.request(request_json[0]['body']['method'], request_json[0]['body']['parameters'])
 
                         response = connection.getresponse()
-                        print("Status: {} Reason: {}".format(response.status, response.reason))
-                        strresponse = "Status: {} Reason: {}".format(response.status, response.reason)
 
-                        bytesToSend = authpass_bytes + str.encode(strresponse) 
+                        success_json = {'id': request_json[0]['body']['id'] ,'success': True, 'status': 200, 'payload': { 'content': str(response.read()) ,'requests': None }}
+                        success_str = json.dumps(success_json) 
+                        success_bytes = str.encode(success_str)
 
-                        UDPServer.sendto(bytesToSend, address)
+                        
 
-                
+                        
+                        
+                        
 except socket.timeout:
         print("405 - Server Timeout.")
