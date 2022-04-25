@@ -1,5 +1,10 @@
 import socket
 import json
+import string
+import random
+
+letters_digits = string.ascii_lowercase + string.digits
+id = ''.join(random.choice(letters_digits) for i in range(8)) + "-"  +  ''.join(random.choice(letters_digits) for i in range(4)) + "-"  +  ''.join(random.choice(letters_digits) for i in range(4)) + "-"  +  ''.join(random.choice(letters_digits) for i in range(12))
 
 IP = socket.gethostbyname(socket.gethostname())
 HOST = 5151
@@ -8,7 +13,7 @@ ADDRESS = (IP, HOST)
 FORMAT = 'utf-8'
 
 
-message = {'id': '214df-dsf-sdfq324-sdf-wdnsjdn' ,'type': 'SEND', 'body': {'id': '214df-dsf-sdfq324-sdf-wdnsjdn', 'method': 'GET', 'path': 'www.google.com', 'parameters': '', 'Timeout': 1}}, {'Type': 'AUTH', 'Body': {'token': 'og00209'}}
+message = {'id': id ,'type': 'SEND', 'body': {'method': 'GET', 'path': 'https://www.google.com', 'queryParameters': '', 'body': {'username': 'og00209'}, 'Timeout': 1000}}, {'Type': 'AUTH', 'Body': {'token': 'og00209'}}
 json_message = json.dumps(message)
 json_bytes = str.encode(json_message)
 
