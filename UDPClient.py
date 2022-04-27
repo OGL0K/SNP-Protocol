@@ -13,7 +13,7 @@ ADDRESS = (IP, HOST)
 FORMAT = 'utf-8'
 
 
-message = {'id': id ,'type': 'SEND', 'body': {'method': 'GET', 'path': 'https://www.google.com', 'queryParameters': '', 'body': {'username': 'og00209'}, 'Timeout': 1000}}, {'Type': 'AUTH', 'Body': {'token': 'og00209'}}
+message = {'id': id ,'type': 'SEND', 'body': {'method': 'GET', 'path': 'https://www.google.com', 'queryParameters': '', 'body': {'username': 'og00209'}, 'Timeout': 1000}}, {'Type': 'AUTH', 'Body': {'token': ''}}
 json_message = json.dumps(message)
 json_bytes = str.encode(json_message)
 
@@ -21,18 +21,19 @@ json_bytes = str.encode(json_message)
 UDPClientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 UDPClientSocket.settimeout(5)
 
+
 try:
-
-    def sendRequest():
-        UDPClientSocket.sendto(json_message.encode(FORMAT), ADDRESS)
-
-    def receiveResponse():
-        ServerResponse = UDPClientSocket.recvfrom(BUFFER_SIZE)
-        msg = f"{(ServerResponse[0].decode(FORMAT))}"
-        print(msg)
     
-    sendRequest()
-    receiveResponse()
+        def sendRequest():
+            UDPClientSocket.sendto(json_message.encode(FORMAT), ADDRESS)
+
+        def receiveResponse():
+            ServerResponse = UDPClientSocket.recvfrom(BUFFER_SIZE)
+            msg = f"{(ServerResponse[0].decode(FORMAT))}"
+            print(msg)
+    
+        sendRequest()
+        receiveResponse()
 
 except socket.timeout:
     print('Timeout.')
