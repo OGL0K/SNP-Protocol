@@ -1,8 +1,8 @@
-from lib2to3.pgen2 import token
 import socket
 import json
 import string
 import random
+import sys
 import textwrap
 from time import sleep
 
@@ -11,53 +11,103 @@ id = ''.join(random.choice(letters_digits) for i in range(8)) + "-"  +  ''.join(
 
 IP = socket.gethostbyname(socket.gethostname())
 HOST = 5151
-BUFFER_SIZE = 1000000
+BUFFER_SIZE = 1024
 ADDRESS = (IP, HOST)
 FORMAT = 'utf-8'
 
 UDPClientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-UDPClientSocket.settimeout(50)
+UDPClientSocket.settimeout(5)
 
-try:
+def Send():
+    
     type = input('Please enter your type: ')
-    authtoken = input('Please enter a token: ')
-except socket.timeout:
-    print('Timeout.')
 
-send_request = {'id': id ,'type': 'SEND', 'body': {'method': 'GET', 'path': 'https://www.google.com', 'queryParameters': '', 'body': {'username': 'og00209'}, 'Timeout': 1000}},{'Type': 'AUTH', 'Body': {'token': 'og00209'}} 
-auth_request = {'Type': 'AUTH', 'Body': {'token': authtoken}}
+    if(type == 'AUTH'):
+            authtoken = input('Please enter a token: ')
+            if(authtoken == 'quit'):
+                print('Closing...')
+                sys.exit()
+            auth_request = {'id': id, 'type': type, 'body': {'token': authtoken}}
+            Request(auth_request, UDPClientSocket)
 
+    elif(type == 'SEND'):
+        if(type == 'quit'):
+            print('Closing...')
+            sys.exit()
 
+        method = input('Please enter your method: ')
 
-def sendRequest(send_request, UDPClientSocket):
-    
-    json_message = json.dumps(send_request)
-    packet_list = textwrap.wrap(json_message, 1024)
-    
-    try:
-       
-     
+        if(method == 'quit'):
+                print('Closing...')
+                sys.exit() 
         
+        if(method == 'GET'):
+            path = input('Please enter your path: ')
+            if(path == 'quit'):
+                print('Closing...')
+                sys.exit() 
+            parameters = input('Please enter your parameters: ')
+            if(parameters == 'quit'):
+                print('Closing...')
+                sys.exit()
+
+            send_getrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'queryParameters': parameters, 'body': None, 'Timeout': 10000}}
+            Request(send_getrequest, UDPClientSocket)
+            receiveRespond()
+
+        if(method == 'POST'):
+            path = input('Please enter your path: ')
+            if(path == 'quit'):
+                print('Closing...')
+                sys.exit()
+            username = input('Please enter your username: ')
+            if(username == 'quit'):
+                print('Closing...')
+                sys.exit()
+            send_postrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'queryParameters': None, 'body': {'username': username}, 'Timeout': 10000}}
+            Request(send_postrequest, UDPClientSocket)
+            receiveRespond()
+
+        if(method != 'GET' and method != 'POST'): 
+            print('Method should be either "GET" or "POST".')
+            Send()    
+
+    else:
+        print('Type should be either "SEND" or "AUTH".')
+        Send()
+            
+def receiveRespond():
+    respond_packets = {}
+
+    while(True):
+        ServerResponse = UDPClientSocket.recvfrom(BUFFER_SIZE)
+        
+        respond = ServerResponse[0].decode(FORMAT)
+        respond_json = json.loads(respond)
+        if id not in respond_packets:
+                    respond_packets[id] = {respond_json['packetNumber']: respond_json['payloadData']}
+        else:
+                respond_packets[id]['packetNumber'] = respond_json['payloadData']
+
+        if len(respond_packets[id]) == respond_json['totalPackets']:
+                reassembled = ''
+                for i in range(len(respond_packets[id])):
+                        reassembled += respond_packets[id][i+1]
+                print(reassembled)
+        print(respond)
+        Send()
+
+def Request(request, UDPClientSocket):
+
+        json_message = json.dumps(request)
+        packet_list = textwrap.wrap(json_message, 1024)
+
+
         for i in range(len(packet_list)):
             packet = {"id": id, "packetNumber": i+1, "totalPackets": len(packet_list), "payloadData": packet_list[i] }
             encodedpacket = json.dumps(packet).encode()
             UDPClientSocket.sendto(encodedpacket, ADDRESS)
-            
-    except socket.timeout:
-        print('Timeout.')
+            receiveRespond()
 
-sendRequest(send_request, UDPClientSocket)
+Send()
 
-def receiveRespond():
-    try:   
-        while(True):
-            
-            ServerResponse = UDPClientSocket.recvfrom(BUFFER_SIZE)
-            msg = f"{(ServerResponse[0].decode(FORMAT))}"
-            print(msg)
-            sleep(2)
-            
-    except socket.timeout:
-        print('Timeout.')
-
-receiveRespond()
