@@ -174,10 +174,7 @@ def HTTPRequest(request_json, address):
                                         success = False
                                 
                                 success_json = {'id': request_json['id'] , 'success': success, 'status': r.status_code, 'payload': { 'content': str(r) ,'requests': authenticatedClients[address]['requests']}}
-                                success_str = json.dumps(success_json) 
-                                success_bytes = str.encode(success_str)
-
-                                UDPServer.sendto(success_bytes, address)
+                                Respond(success_json, UDPServer)
 
                         except requests.exceptions.Timeout as e:
                                 print(e)
