@@ -32,9 +32,7 @@ def Auth(request_json, address):
                         return None
         except KeyError:
                 bad_request_json = {'id': request_json['id'], 'success': False, 'status': 400, 'payload': { 'error': 'BAD_REQUEST', 'message': 'You have made a bad request'}} 
-                bad_request = json.dumps(bad_request_json)
-                bad_request_bytes = str.encode(bad_request)
-                UDPServer.sendto(bad_request_bytes, address)
+                Respond(bad_request_json, UDPServer)
                 return None
 
         if(request_json['body']['token'] == authtoken):
