@@ -21,6 +21,10 @@ UDPClientSocket.settimeout(5)
 def Send():
     
     type = input('Please enter your type: ')
+    
+    if(type == 'quit'):
+            print('Closing...')
+            sys.exit()
 
     if(type == 'AUTH'):
             authtoken = input('Please enter a token: ')
@@ -31,9 +35,7 @@ def Send():
             Request(auth_request, UDPClientSocket)
 
     elif(type == 'SEND'):
-        if(type == 'quit'):
-            print('Closing...')
-            sys.exit()
+        
 
         method = input('Please enter your method: ')
 
@@ -106,6 +108,8 @@ def Request(request, UDPClientSocket):
             encodedpacket = json.dumps(packet).encode()
             UDPClientSocket.sendto(encodedpacket, ADDRESS)
             receiveRespond()
-while(True):            
-    Send()
-
+try:            
+    while(True):            
+        Send()
+except socket.timeout:
+    print('Timeout.')

@@ -79,38 +79,27 @@ def HTTPRequest(request_json, address):
                                         Respond(success_json, UDPServer)
                                 
 
-                        except requests.exceptions.Timeout:
+                        except requests.exceptions.Timeout as e:
+                                print(e)
                                 timeout_json = {'id': request_json['id'], 'status': 408,  'success': False, 'payload': { 'content': { 'error': 'TIMEOUT_ERROR', 'message': 'Your request has timed out.'}}}
-                                timeout_str = json.dumps(timeout_json)
-                                timeout_bytes = str.encode(timeout_str)
-                                UDPServer.sendto(timeout_bytes, address)
-                                print('Timeout')
-                                
+                                Respond(timeout_json, UDPServer)
+                                 
                         except NameError as e:
                                 print(e)
                                 internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
-                                internalerr_str = json.dumps(internalerr_json)
-                                internalerr_bytes = str.encode(internalerr_str) 
-
-                                UDPServer.sendto(internalerr_bytes, address)
+                                Respond(internalerr_json, UDPServer)
 
                         except TypeError as e:
                                 print(e)
                                 internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
-                                internalerr_str = json.dumps(internalerr_json)
-                                internalerr_bytes = str.encode(internalerr_str) 
-
-                                UDPServer.sendto(internalerr_bytes, address)
+                                Respond(internalerr_json, UDPServer)
                 
                 elif(request_json['body']['method'] == 'POST'):
 
                         try:
                                 if(nonauthClient[address] -1 < 1):
                                         no_request_json = {'id': request_json['id'], 'success': False, 'Status': 403, 'payload': { 'content': {'ERROR': 'UNAUTHORISED_REQUEST', 'message': 'You have reached your request limit' }}}
-                                        no_request_str = json.dumps(no_request_json)
-                                        no_request_bytes = str.encode(no_request_str)
-
-                                        UDPServer.sendto(no_request_bytes, address)
+                                        Respond(no_request_json, UDPServer)
                                 else:
                                         r = requests.post(request_json['body']['path'], data = request_json['body']['body']['username'] , timeout = request_json['body']['Timeout'])
                                         
@@ -121,35 +110,24 @@ def HTTPRequest(request_json, address):
                                                 success = False
                                         
                                         success_json = {'id': request_json['id'] , 'success': success, 'status': r.status_code, 'payload': { 'content': str(r) ,'requests': nonauthClient[address] - 1}}
-                                        success_str = json.dumps(success_json) 
-                                        success_bytes = str.encode(success_str)
-
-                                        UDPServer.sendto(success_bytes, address)
+                                        Respond(success_json, UDPServer)
                                 
 
 
-                        except requests.exceptions.Timeout:
+                        except requests.exceptions.Timeout as e:
+                                print(e)
                                 timeout_json = {'id': request_json['id'], 'status': 408,  'success': False, 'payload': { 'content': { 'error': 'TIMEOUT_ERROR', 'message': 'Your request has timed out.'}}}
-                                timeout_str = json.dumps(timeout_json)
-                                timeout_bytes = str.encode(timeout_str)
-                                UDPServer.sendto(timeout_bytes, address) 
-                                print('Timeout')
+                                Respond(timeout_json, UDPServer)
                         
                         except NameError as e:
                                 print(e)
                                 internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
-                                internalerr_str = json.dumps(internalerr_json)
-                                internalerr_bytes = str.encode(internalerr_str) 
-
-                                UDPServer.sendto(internalerr_bytes, address)
+                                Respond(internalerr_json, UDPServer)
 
                         except TypeError as e:
                                 print(e)
                                 internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
-                                internalerr_str = json.dumps(internalerr_json)
-                                internalerr_bytes = str.encode(internalerr_str) 
-
-                                UDPServer.sendto(internalerr_bytes, address)
+                                Respond(internalerr_json, UDPServer)
 
                         
         elif(authenticatedClients[address]['authenticated'] == True):
@@ -165,33 +143,22 @@ def HTTPRequest(request_json, address):
                                         success = False
                                 
                                 success_json = {'id': request_json['id'] , 'success': success, 'status': r.status_code, 'payload': { 'content': str(r.text) ,'requests':authenticatedClients[address]['requests']}}
-                                success_str = json.dumps(success_json) 
-                                success_bytes = str.encode(success_str)
-
-                                UDPServer.sendto(success_bytes, address)
+                                Respond(success_json, UDPServer)
                                 
-                        except requests.exceptions.Timeout:
+                        except requests.exceptions.Timeout as e:
+                                print(e)
                                 timeout_json = {'id': request_json['id'], 'status': 408,  'success': False, 'payload': { 'content': { 'error': 'TIMEOUT_ERROR', 'message': 'Your request has timed out.'}}}
-                                timeout_str = json.dumps(timeout_json)
-                                timeout_bytes = str.encode(timeout_str)
-                                UDPServer.sendto(timeout_bytes, address)
-                                print('Timeout')
+                                Respond(timeout_json, UDPServer)
 
                         except NameError as e:
                                 print(e)
                                 internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
-                                internalerr_str = json.dumps(internalerr_json)
-                                internalerr_bytes = str.encode(internalerr_str) 
-
-                                UDPServer.sendto(internalerr_bytes, address)
+                                Respond(internalerr_json, UDPServer)
 
                         except TypeError as e:
                                 print(e)
                                 internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
-                                internalerr_str = json.dumps(internalerr_json)
-                                internalerr_bytes = str.encode(internalerr_str) 
-
-                                UDPServer.sendto(internalerr_bytes, address)
+                                Respond(internalerr_json, UDPServer)
                                 
 
                 elif(request_json['body']['method'] == 'POST'):
@@ -212,30 +179,22 @@ def HTTPRequest(request_json, address):
 
                                 UDPServer.sendto(success_bytes, address)
 
-                        except requests.exceptions.Timeout:
+                        except requests.exceptions.Timeout as e:
+                                print(e)
                                 timeout_json = {'id': request_json['id'], 'status': 408,  'success': False, 'payload': { 'content': { 'error': 'TIMEOUT_ERROR', 'message': 'Your request has timed out.'}}}
-                                timeout_str = json.dumps(timeout_json)
-                                timeout_bytes = str.encode(timeout_str)
-                                UDPServer.sendto(timeout_bytes, address) 
+                                Respond(timeout_json, UDPServer)
 
                                 print('Timeout')
 
                         except NameError as e:
                                 print(e)
                                 internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
-                                internalerr_str = json.dumps(internalerr_json)
-                                internalerr_bytes = str.encode(internalerr_str) 
-
-                                UDPServer.sendto(internalerr_bytes, address)
+                                Respond(internalerr_json, UDPServer)
 
                         except TypeError as e:
                                 print(e)
                                 internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
-                                internalerr_str = json.dumps(internalerr_json)
-                                internalerr_bytes = str.encode(internalerr_str) 
-
-                                UDPServer.sendto(internalerr_bytes, address)
-    
+                                Respond(internalerr_json, UDPServer)
 try:         
         FORMAT = 'utf-8'
         packets = {}
@@ -285,16 +244,9 @@ try:
 except NameError as e:
         print(e)
         internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
-        internalerr_str = json.dumps(internalerr_json)
-        internalerr_bytes = str.encode(internalerr_str) 
-
-        UDPServer.sendto(internalerr_bytes, address)
+        Respond(internalerr_json, UDPServer)
 
 except TypeError as e:
         print(e)
         internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
-        internalerr_str = json.dumps(internalerr_json)
-        internalerr_bytes = str.encode(internalerr_str) 
-
-        UDPServer.sendto(internalerr_bytes, address)
-
+        Respond(internalerr_json, UDPServer)
