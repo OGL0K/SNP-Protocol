@@ -4,14 +4,14 @@ import string
 import random
 import sys
 import textwrap
-from time import sleep
+
 
 letters_digits = string.ascii_lowercase + string.digits
 id = ''.join(random.choice(letters_digits) for i in range(8)) + "-"  +  ''.join(random.choice(letters_digits) for i in range(4)) + "-"  +  ''.join(random.choice(letters_digits) for i in range(4)) + "-"  +  ''.join(random.choice(letters_digits) for i in range(12))
 
 IP = socket.gethostbyname(socket.gethostname())
 HOST = 5151
-BUFFER_SIZE = 1024
+BUFFER_SIZE = 2048
 ADDRESS = (IP, HOST)
 FORMAT = 'utf-8'
 
@@ -54,7 +54,7 @@ def Send():
             send_getrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'queryParameters': parameters, 'body': None, 'Timeout': 10000}}
             Request(send_getrequest, UDPClientSocket)
             receiveRespond()
-
+            
         if(method == 'POST'):
             path = input('Please enter your path: ')
             if(path == 'quit'):
@@ -67,14 +67,14 @@ def Send():
             send_postrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'queryParameters': None, 'body': {'username': username}, 'Timeout': 10000}}
             Request(send_postrequest, UDPClientSocket)
             receiveRespond()
-
+            
         if(method != 'GET' and method != 'POST'): 
             print('Method should be either "GET" or "POST".')
-            Send()    
+            return 
 
     else:
         print('Type should be either "SEND" or "AUTH".')
-        Send()
+        return
             
 def receiveRespond():
     respond_packets = {}
@@ -87,27 +87,25 @@ def receiveRespond():
         if id not in respond_packets:
                     respond_packets[id] = {respond_json['packetNumber']: respond_json['payloadData']}
         else:
-                respond_packets[id]['packetNumber'] = respond_json['payloadData']
+                respond_packets[id][respond_json['packetNumber']] = respond_json['payloadData']
 
         if len(respond_packets[id]) == respond_json['totalPackets']:
                 reassembled = ''
                 for i in range(len(respond_packets[id])):
                         reassembled += respond_packets[id][i+1]
                 print(reassembled)
-        print(respond)
-        Send()
-
+                return
+    
 def Request(request, UDPClientSocket):
-
+        
         json_message = json.dumps(request)
         packet_list = textwrap.wrap(json_message, 1024)
-
-
+    
         for i in range(len(packet_list)):
-            packet = {"id": id, "packetNumber": i+1, "totalPackets": len(packet_list), "payloadData": packet_list[i] }
+            packet = {"id": id, "packetNumber": i+1, "totalPackets": len(packet_list), "payloadData": packet_list[i]}
             encodedpacket = json.dumps(packet).encode()
             UDPClientSocket.sendto(encodedpacket, ADDRESS)
             receiveRespond()
-
-Send()
+while(True):            
+    Send()
 
