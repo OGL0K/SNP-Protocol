@@ -21,7 +21,7 @@ UDPClientSocket.settimeout(5)
 def Send():
     
     type = input('Please enter your type: ')
-    
+
     if(type == 'quit'):
             print('Closing...')
             sys.exit()
@@ -33,10 +33,9 @@ def Send():
                 sys.exit()
             auth_request = {'id': id, 'type': type, 'body': {'token': authtoken}}
             Request(auth_request, UDPClientSocket)
+            receiveRespond()
 
     elif(type == 'SEND'):
-        
-
         method = input('Please enter your method: ')
 
         if(method == 'quit'):
@@ -47,13 +46,13 @@ def Send():
             path = input('Please enter your path: ')
             if(path == 'quit'):
                 print('Closing...')
-                sys.exit() 
+                sys.exit()
             parameters = input('Please enter your parameters: ')
             if(parameters == 'quit'):
                 print('Closing...')
                 sys.exit()
 
-            send_getrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'queryParameters': parameters, 'body': None, 'Timeout': 10000}}
+            send_getrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'quryParameters': parameters, 'body': None, 'Timeout': 10000}}
             Request(send_getrequest, UDPClientSocket)
             receiveRespond()
             
@@ -107,9 +106,8 @@ def Request(request, UDPClientSocket):
             packet = {"id": id, "packetNumber": i+1, "totalPackets": len(packet_list), "payloadData": packet_list[i]}
             encodedpacket = json.dumps(packet).encode()
             UDPClientSocket.sendto(encodedpacket, ADDRESS)
-            receiveRespond()
 try:            
     while(True):            
         Send()
 except socket.timeout:
-    print('Timeout.')
+    print('Client Timeout.')
