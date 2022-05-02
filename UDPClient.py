@@ -4,6 +4,7 @@ import string
 import random
 import sys
 import textwrap
+from time import sleep
 
 
 letters_digits = string.ascii_lowercase + string.digits
@@ -34,6 +35,7 @@ def Send():
             auth_request = {'id': id, 'type': type, 'body': {'token': authtoken}}
             Request(auth_request, UDPClientSocket)
             receiveRespond()
+            receiveRespond()
 
     elif(type == 'SEND'):
         method = input('Please enter your method: ')
@@ -55,6 +57,7 @@ def Send():
             send_getrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'quryParameters': parameters, 'body': None, 'Timeout': 10000}}
             Request(send_getrequest, UDPClientSocket)
             receiveRespond()
+            receiveRespond()
             
         if(method == 'POST'):
             path = input('Please enter your path: ')
@@ -67,6 +70,7 @@ def Send():
                 sys.exit()
             send_postrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'queryParameters': None, 'body': {'username': username}, 'Timeout': 10000}}
             Request(send_postrequest, UDPClientSocket)
+            receiveRespond()
             receiveRespond()
             
         if(method != 'GET' and method != 'POST'): 
@@ -95,8 +99,9 @@ def receiveRespond():
                 for i in range(len(respond_packets[id])):
                         reassembled += respond_packets[id][i+1]
                 print(reassembled)
-                return
-    
+        return
+              
+            
 def Request(request, UDPClientSocket):
         
         json_message = json.dumps(request)
@@ -107,7 +112,7 @@ def Request(request, UDPClientSocket):
             encodedpacket = json.dumps(packet).encode()
             UDPClientSocket.sendto(encodedpacket, ADDRESS)
 try:            
-    while(True):            
+    while(True):        
         Send()
 except socket.timeout:
     print('Client Timeout.')

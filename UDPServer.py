@@ -16,7 +16,7 @@ UDPServer.bind(ADDRESS)
 print("Server is up and listening...")
 
 def Respond(respond, UDPServer):
-    
+        
         json_respond = json.dumps(respond)
         packet_list = textwrap.wrap(json_respond, 1024)
 
@@ -37,6 +37,7 @@ def Auth(request_json, address):
                 return None
 
         if(request_json['body']['token'] == authtoken):
+                
                 authenticatedClients[address] = {'requests': None, 'authenticated': False}
                 authenticated = True
                 authpass_json = {'id': request_json['id'], 'success': True, 'status': 200, 'payload': { 'Message': 'Authentication successful'}}
@@ -213,6 +214,7 @@ try:
         packets = {}
         authenticatedClients = {}
         nonauthClient = {}
+        connectedClients = {'queue': 0}
         while(True):
                 
                 try:        
@@ -223,20 +225,25 @@ try:
                         id = request_json['id']
                         clientIP  = "Client IP Address: {}".format(address)
                         print(clientIP)
-                
+                        
+                        """if address not in connectedClients:
+                                connectedClients[address] = 0
+                                connectedClients['queue'] += 1"""
+                                
+                        ackResponse = { 'id': id, 'status': 201,  'payload': { 'content': {'message': 'What the ACK'} } }
+                                
                         if address not in nonauthClient:
                                 nonauthClient[address] = {'requests': 10}
                         
                         else:
                                 nonauthClient[address]['requests'] -= 1
 
-
                         if id not in packets:
                                 packets[id] = {request_json['packetNumber']: request_json['payloadData']}
                         else:
                                 packets[id][request_json['packetNumber']] = request_json['payloadData']
                         
-
+                        
                         if len(packets[id]) == request_json['totalPackets']:
                                 reassembled = ''
                                 for i in range(len(packets[id])):
@@ -246,10 +253,12 @@ try:
                                 request = json.loads(reassembled)
                                 
                                 if(request['type'] == 'AUTH'):
+                                        Respond(ackResponse, UDPServer)
                                         Auth(request, address)
                                         packets = {}
 
                                 elif(request['type'] == 'SEND'):
+                                        Respond(ackResponse, UDPServer)
                                         HTTPRequest(request, address)
                                         packets = {}
                                                         
@@ -263,10 +272,10 @@ try:
                         internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
                         Respond(internalerr_json, UDPServer)
                         
-                except KeyError as e:
+                """except KeyError as e:
                         print(f'There is a key error: {e}')
                         internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
-                        Respond(internalerr_json, UDPServer)
+                        Respond(internalerr_json, UDPServer)"""
 
 except socket.timeout:
         print('Server Timeout.')
