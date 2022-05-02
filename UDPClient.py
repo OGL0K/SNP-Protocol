@@ -99,7 +99,7 @@ def receiveRespond():
                 for i in range(len(respond_packets[id])):
                         reassembled += respond_packets[id][i+1]
                 print(reassembled)
-        return
+                return
               
             
 def Request(request, UDPClientSocket):

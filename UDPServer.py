@@ -73,7 +73,7 @@ def HTTPRequest(request_json, address):
                                 else:
                                         success = False
                                 
-                                success_json = {'id': request_json['id'] , 'success': success, 'status': r.status_code, 'payload': { 'content': str(r.text) ,'requests':authenticatedClients[address]['requests']}}
+                                success_json = {'id': request_json['id'] , 'success': success, 'status': r.status_code, 'payload': { 'content':{ 'response': {'data': str(r.text) ,'headers': r.headers['Content-Type'], 'status': r.status_code},'requests':authenticatedClients[address]['requests']}}}
                                 Respond(success_json, UDPServer)
                         
                         except requests.exceptions.MissingSchema:
@@ -108,7 +108,7 @@ def HTTPRequest(request_json, address):
                                 else:
                                         success = False
                                 
-                                success_json = {'id': request_json['id'] , 'success': success, 'status': r.status_code, 'payload': { 'content': str(r.text) ,'requests': authenticatedClients[address]['requests']}}
+                                success_json = {'id': request_json['id'] , 'success': success, 'status': r.status_code, 'payload': { 'content':{ 'response': {'data': str(r.text) ,'headers': r.headers['Content-Type'], 'status': r.status_code},'requests':authenticatedClients[address]['requests']}}}
                                 Respond(success_json, UDPServer)
 
                         except requests.exceptions.MissingSchema:
@@ -147,7 +147,7 @@ def HTTPRequest(request_json, address):
                                         else:
                                                 success = False
                                 
-                                        success_json = {'id': request_json['id'] , 'success': success, 'status': r.status_code, 'payload': { 'content': str(r.text) ,'requests': nonauthClient[address]['requests'] - 1}}
+                                        success_json = {'id': request_json['id'] , 'success': success, 'status': r.status_code, 'payload': { 'content':{ 'response': {'data': str(r.text) ,'headers': r.headers['Content-Type'], 'status': r.status_code},'requests': nonauthClient[address]['requests'] - 1}}}
                                         Respond(success_json, UDPServer)
                                 
                         except requests.exceptions.MissingSchema:
@@ -186,7 +186,7 @@ def HTTPRequest(request_json, address):
                                         else:
                                                 success = False
                                         
-                                        success_json = {'id': request_json['id'] , 'success': success, 'status': r.status_code, 'payload': { 'content': str(r.text) ,'requests': nonauthClient[address]['requests'] - 1}}
+                                        success_json = {'id': request_json['id'] , 'success': success, 'status': r.status_code, 'payload': { 'content':{ 'response': {'data': str(r.text) ,'headers': r.headers['Content-Type'], 'status': r.status_code},'requests': nonauthClient[address]['requests'] - 1}}}
                                         Respond(success_json, UDPServer)
                                 
                         except requests.exceptions.MissingSchema:
@@ -226,11 +226,11 @@ try:
                         clientIP  = "Client IP Address: {}".format(address)
                         print(clientIP)
                         
-                        """if address not in connectedClients:
+                        if address not in connectedClients:
                                 connectedClients[address] = 0
-                                connectedClients['queue'] += 1"""
+                                connectedClients['queue'] += 1
                                 
-                        ackResponse = { 'id': id, 'status': 201,  'payload': { 'content': {'message': 'What the ACK'} } }
+                        ackResponse = { 'id': id, 'status': 201,  'payload': { 'content': {'queue': connectedClients['queue'], 'message': 'What the ACK'}}}
                                 
                         if address not in nonauthClient:
                                 nonauthClient[address] = {'requests': 10}
@@ -272,10 +272,10 @@ try:
                         internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
                         Respond(internalerr_json, UDPServer)
                         
-                """except KeyError as e:
+                except KeyError as e:
                         print(f'There is a key error: {e}')
                         internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
-                        Respond(internalerr_json, UDPServer)"""
+                        Respond(internalerr_json, UDPServer)
 
 except socket.timeout:
         print('Server Timeout.')
