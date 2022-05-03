@@ -18,10 +18,10 @@ print("Server is up and listening...")
 def Respond(respond, UDPServer):
         
         json_respond = json.dumps(respond)
-        packet_list = textwrap.wrap(json_respond, 1024)
+        packet_list = textwrap.wrap(json_respond, 510)
 
         for i in range(len(packet_list)):
-            respond_packet = {"id": respond['id'], "packetNumber": i+1, "totalPackets": len(packet_list), "payloadData": packet_list[i]}
+            respond_packet = {"id": respond['id'], "packetNumber": i+1, "totalPackets": len(packet_list), "payloadData": [x for x in packet_list[i].encode()]}
             encodedpacket = json.dumps(respond_packet).encode()
             UDPServer.sendto(encodedpacket, address)
 
@@ -165,10 +165,10 @@ def HTTPRequest(request_json, address):
                                 internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
                                 Respond(internalerr_json, UDPServer)
 
-                        except TypeError as e:
+                        """except TypeError as e:
                                 print(f'There is a type error: {e}')
                                 internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
-                                Respond(internalerr_json, UDPServer)
+                                Respond(internalerr_json, UDPServer)"""
 
                 
                 elif(request_json['body']['method'] == 'POST'):
@@ -239,17 +239,17 @@ try:
                                 nonauthClient[address]['requests'] -= 1
 
                         if id not in packets:
-                                packets[id] = {request_json['packetNumber']: request_json['payloadData']}
+                                packets[id] = {request_json['packetNumber']: ''.join([chr(x) for x in request_json['payloadData']])}
                         else:
-                                packets[id][request_json['packetNumber']] = request_json['payloadData']
-                        
+                                packets[id][request_json['packetNumber']] = ''.join([chr(x) for x in request_json['payloadData']])
+                                
                         
                         if len(packets[id]) == request_json['totalPackets']:
                                 reassembled = ''
                                 for i in range(len(packets[id])):
                                         reassembled += packets[id][i+1]
                                 print(f'REASSEMBLED PACKET: {reassembled}')
-
+                                
                                 request = json.loads(reassembled)
                                 
                                 if(request['type'] == 'AUTH'):
@@ -267,15 +267,15 @@ try:
                         internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
                         Respond(internalerr_json, UDPServer)
 
-                except TypeError as e:
+                """except TypeError as e:
                         print(f'There is a type error: {e}')
                         internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
-                        Respond(internalerr_json, UDPServer)
+                        Respond(internalerr_json, UDPServer)"""
                         
-                except KeyError as e:
+                """ except KeyError as e:
                         print(f'There is a key error: {e}')
                         internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
-                        Respond(internalerr_json, UDPServer)
+                        Respond(internalerr_json, UDPServer)"""
 
 except socket.timeout:
         print('Server Timeout.')
