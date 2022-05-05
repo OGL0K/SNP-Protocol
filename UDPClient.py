@@ -4,6 +4,7 @@ import string
 import random
 import sys
 import textwrap
+from time import sleep
 
 
 letters_digits = string.ascii_lowercase + string.digits
@@ -26,7 +27,7 @@ def Send():
             print('Closing...')
             sys.exit()
 
-    if(type == 'AUTH'):
+    if(type == 'AUTH' or type == 'auth'):
             authtoken = input('Please enter a token: ')
             if(authtoken == 'quit'):
                 print('Closing...')
@@ -36,14 +37,14 @@ def Send():
             receiveRespond()
             receiveRespond()
 
-    elif(type == 'SEND'):
+    elif(type == 'SEND' or type == 'send'):
         method = input('Please enter your method: ')
 
         if(method == 'quit'):
                 print('Closing...')
                 sys.exit() 
         
-        if(method == 'GET'):
+        if(method == 'GET' or method == 'get' ):
             path = input('Please enter your path: ')
             if(path == 'quit'):
                 print('Closing...')
@@ -53,12 +54,12 @@ def Send():
                 print('Closing...')
                 sys.exit()
 
-            send_getrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'quryParameters': parameters, 'body': None}, 'timeout': 0.01}
+            send_getrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'quryParameters': parameters, 'body': None}, 'timeout': 10000}
             Request(send_getrequest, UDPClientSocket)
             receiveRespond()
             receiveRespond()
             
-        if(method == 'POST'):
+        if(method == 'POST' or method == 'post'):
             path = input('Please enter your path: ')
             if(path == 'quit'):
                 print('Closing...')
@@ -72,18 +73,20 @@ def Send():
             receiveRespond()
             receiveRespond()
             
-        if(method != 'GET' and method != 'POST'): 
-            print('Method should be either "GET" or "POST".')
+        if(method != 'GET' and method != 'POST' and method != 'get' and method != 'post'): 
+            print('Invalid method.')
             return 
 
     else:
         print('Type should be either "SEND" or "AUTH".')
-        return
-            
+        return     
+
 def receiveRespond():
+    
     respond_packets = {}
 
     while(True):
+        
         ServerResponse = UDPClientSocket.recvfrom(BUFFER_SIZE)
         
         respond = ServerResponse[0].decode(FORMAT)
@@ -99,20 +102,23 @@ def receiveRespond():
                         reassembled += respond_packets[id][i+1]
                 print(reassembled)
                 return
-              
+        
             
 def Request(request, UDPClientSocket):
-        
-        json_message = json.dumps(request)
-        packet_list = textwrap.wrap(json_message, 1024)
-    
-        for i in range(len(packet_list)):
-            packet = {"id": id, "packetNumber": i+1, "totalPackets": len(packet_list), "payloadData": [x for x in packet_list[i].encode()]}
-            print(packet)
-            encodedpacket = json.dumps(packet).encode()
-            UDPClientSocket.sendto(encodedpacket, ADDRESS)
+      
+    json_message = json.dumps(request)
+    packet_list = textwrap.wrap(json_message, 1024)
+
+    for i in range(len(packet_list)):
+        packet = {"id": id, "packetNumber": i+1, "totalPackets": len(packet_list), "payloadData": [x for x in packet_list[i].encode()]}
+        encodedpacket = json.dumps(packet).encode()
+        UDPClientSocket.sendto(encodedpacket, ADDRESS)
+
 try:            
     while(True):        
         Send()
 except socket.timeout:
+    print('Client Timeout.')
+except ConnectionResetError:
+    sleep(5)
     print('Client Timeout.')

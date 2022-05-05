@@ -22,7 +22,6 @@ def Respond(respond, UDPServer):
 
         for i in range(len(packet_list)):
             respond_packet = {"id": respond['id'], "packetNumber": i+1, "totalPackets": len(packet_list), "payloadData": [x for x in packet_list[i].encode()]}
-            print(respond_packet)
             encodedpacket = json.dumps(respond_packet).encode()
             UDPServer.sendto(encodedpacket, address)
 
@@ -63,7 +62,7 @@ def HTTPRequest(request_json, address):
                 return None
 
         if(address in authenticatedClients):
-                if(request_json['body']['method'] == 'GET'):
+                if(request_json['body']['method'] == 'GET' or request_json['body']['method'] == 'get'):
                         try:
                                         
                                 r = requests.get(request_json['body']['path'], timeout = request_json['timeout'])
@@ -97,7 +96,7 @@ def HTTPRequest(request_json, address):
                                 internalerr_json = {'id': request_json['id'], 'status': 405,  'success': False, 'payload': { 'content': { 'error': 'INTERNAL_SERVER_ERROR', 'message': 'There was a problem when processing your request.'}}}
                                 Respond(internalerr_json, UDPServer)
                                 
-                elif(request_json['body']['method'] == 'POST'):
+                elif(request_json['body']['method'] == 'POST' or request_json['body']['method'] == 'post' ):
 
                         try:
 
@@ -134,7 +133,7 @@ def HTTPRequest(request_json, address):
                                 Respond(internalerr_json, UDPServer)
 
         elif(address in nonauthClient):
-                if(request_json['body']['method'] == 'GET'):
+                if(request_json['body']['method'] == 'GET' or request_json['body']['method'] == 'get'):
                         try:
                                 if(nonauthClient[address]['requests'] -1 < 1):
                                         no_request_json = {'id': request_json['id'], 'success': False, 'Status': 403, 'payload': { 'content': {'error': 'UNAUTHORISED_REQUEST', 'message': 'You have reached your request limit' }}}
@@ -172,7 +171,7 @@ def HTTPRequest(request_json, address):
                                 Respond(internalerr_json, UDPServer)
 
                 
-                elif(request_json['body']['method'] == 'POST'):
+                elif(request_json['body']['method'] == 'POST' or request_json['body']['method'] == 'post' ):
 
                         try:
                                 if(nonauthClient[address]['requests'] -1 < 1):
@@ -253,12 +252,12 @@ try:
                                 
                                 request = json.loads(reassembled)
                                 
-                                if(request['type'] == 'AUTH'):
+                                if(request['type'] == 'AUTH' or request['type'] == 'auth'):
                                         Respond(ackResponse, UDPServer)
                                         Auth(request, address)
                                         packets = {}
 
-                                elif(request['type'] == 'SEND'):
+                                elif(request['type'] == 'SEND' or request['type'] == 'send'):
                                         Respond(ackResponse, UDPServer)
                                         HTTPRequest(request, address)
                                         packets = {}
