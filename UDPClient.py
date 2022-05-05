@@ -4,7 +4,6 @@ import string
 import random
 import sys
 import textwrap
-from time import sleep
 
 
 letters_digits = string.ascii_lowercase + string.digits
@@ -12,8 +11,8 @@ id = ''.join(random.choice(letters_digits) for i in range(8)) + "-"  +  ''.join(
 
 IP = socket.gethostbyname(socket.gethostname())
 HOST = 5151
-BUFFER_SIZE = 1024
-ADDRESS = (IP, HOST)
+BUFFER_SIZE = 5000
+ADDRESS = ('localhost', HOST)
 FORMAT = 'utf-8'
 
 UDPClientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -54,7 +53,7 @@ def Send():
                 print('Closing...')
                 sys.exit()
 
-            send_getrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'quryParameters': parameters, 'body': None, 'Timeout': 10000}}
+            send_getrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'quryParameters': parameters, 'body': None}, 'timeout': 0.01}
             Request(send_getrequest, UDPClientSocket)
             receiveRespond()
             receiveRespond()
@@ -68,7 +67,7 @@ def Send():
             if(username == 'quit'):
                 print('Closing...')
                 sys.exit()
-            send_postrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'queryParameters': None, 'body': {'username': username}, 'Timeout': 10000}}
+            send_postrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'queryParameters': None, 'body': {'username': username}}, 'timeout': 10000}
             Request(send_postrequest, UDPClientSocket)
             receiveRespond()
             receiveRespond()
@@ -109,6 +108,7 @@ def Request(request, UDPClientSocket):
     
         for i in range(len(packet_list)):
             packet = {"id": id, "packetNumber": i+1, "totalPackets": len(packet_list), "payloadData": [x for x in packet_list[i].encode()]}
+            print(packet)
             encodedpacket = json.dumps(packet).encode()
             UDPClientSocket.sendto(encodedpacket, ADDRESS)
 try:            
