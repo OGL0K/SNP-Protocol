@@ -54,7 +54,7 @@ def Send():
                 print('Closing...')
                 sys.exit()
 
-            send_getrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'queryParameters': parameters, 'body': None}, 'timeout': 0.01}
+            send_getrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'queryParameters': parameters, 'body': None}, 'timeout': 10000}
             Request(send_getrequest, UDPClientSocket)
             receiveRespond()
             receiveRespond()
