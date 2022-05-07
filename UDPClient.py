@@ -54,7 +54,7 @@ def Send():
                 print('Closing...')
                 sys.exit()
 
-            send_getrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'quryParameters': parameters, 'body': None}, 'timeout': 10000}
+            send_getrequest = {'id': id, 'type': type, 'body': {'method': method, 'path': path, 'queryParameters': parameters, 'body': None}, 'timeout': 0.01}
             Request(send_getrequest, UDPClientSocket)
             receiveRespond()
             receiveRespond()
@@ -78,7 +78,7 @@ def Send():
             return 
 
     else:
-        print('Type should be either "SEND" or "AUTH".')
+        print('Invalid Type.')
         return     
 
 def receiveRespond():
@@ -100,12 +100,13 @@ def receiveRespond():
                 reassembled = ''
                 for i in range(len(respond_packets[id])):
                         reassembled += respond_packets[id][i+1]
+                print('Received total packets: {}'.format(respond_json['packetNumber']))
                 print(reassembled)
                 return
         
             
 def Request(request, UDPClientSocket):
-      
+     
     json_message = json.dumps(request)
     packet_list = textwrap.wrap(json_message, 1024)
 
@@ -113,7 +114,7 @@ def Request(request, UDPClientSocket):
         packet = {"id": id, "packetNumber": i+1, "totalPackets": len(packet_list), "payloadData": [x for x in packet_list[i].encode()]}
         encodedpacket = json.dumps(packet).encode()
         UDPClientSocket.sendto(encodedpacket, ADDRESS)
-
+    print(f'Sending: {len(packet_list)} packets...') 
 try:            
     while(True):        
         Send()

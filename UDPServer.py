@@ -24,7 +24,8 @@ def Respond(respond, UDPServer):
             respond_packet = {"id": respond['id'], "packetNumber": i+1, "totalPackets": len(packet_list), "payloadData": [x for x in packet_list[i].encode()]}
             encodedpacket = json.dumps(respond_packet).encode()
             UDPServer.sendto(encodedpacket, address)
-
+        print(f'Sending: {len(packet_list)} packets...') 
+        
 def Auth(request_json, address):
         
         try:
@@ -233,7 +234,7 @@ try:
                         ackResponse = { 'id': id, 'status': 201, 'success': True, 'payload': { 'content': {'queue': connectedClients['queue'], 'message': 'What the ACK'}}}
                                 
                         if address not in nonauthClient:
-                                nonauthClient[address] = {'requests': 10}
+                                nonauthClient[address] = {'requests': 2}
                         
                         else:
                                 nonauthClient[address]['requests'] -= 1
@@ -248,6 +249,7 @@ try:
                                 reassembled = ''
                                 for i in range(len(packets[id])):
                                         reassembled += packets[id][i+1]
+                                print('Received total packets: {}'.format(request_json['packetNumber']))
                                 print(f'REASSEMBLED PACKET: {reassembled}')
                                 
                                 request = json.loads(reassembled)
