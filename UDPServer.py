@@ -18,7 +18,7 @@ print("Server is up and listening...")
 def Respond(respond, UDPServer):
         
         json_respond = json.dumps(respond)
-        packet_list = textwrap.wrap(json_respond, 1024)
+        packet_list = textwrap.wrap(json_respond, 1000)
 
         for i in range(len(packet_list)):
             respond_packet = {"id": respond['id'], "packetNumber": i+1, "totalPackets": len(packet_list), "payloadData": [x for x in packet_list[i].encode()]}
@@ -234,7 +234,7 @@ try:
                         ackResponse = { 'id': id, 'status': 201, 'success': True, 'payload': { 'content': {'queue': connectedClients['queue'], 'message': 'What the ACK'}}}
                                 
                         if address not in nonauthClient:
-                                nonauthClient[address] = {'requests': 2}
+                                nonauthClient[address] = {'requests': 10}
                         
                         else:
                                 nonauthClient[address]['requests'] -= 1
