@@ -46,7 +46,7 @@ def Auth(request_json, address):
                 Respond(authpass_json, UDPServer)
 
         elif(request_json['body']['token'] != authtoken):
-                json_error = {'id': request_json['id'], 'success': False, 'Status': 401, 'payload': { 'content': {'error': 'UNAUTHORISED', 'message': 'Could not authenticate using your authentication token' }}}
+                json_error = {'id': request_json['id'], 'success': False, 'status': 401, 'payload': { 'content': {'error': 'UNAUTHORISED', 'message': 'Could not authenticate using your authentication token' }}}
                 Respond(json_error, UDPServer)
                 
         
@@ -137,7 +137,7 @@ def HTTPRequest(request_json, address):
                 if(request_json['body']['method'] == 'GET' or request_json['body']['method'] == 'get'):
                         try:
                                 if(nonauthClient[address]['requests'] -1 < 1):
-                                        no_request_json = {'id': request_json['id'], 'success': False, 'Status': 403, 'payload': { 'content': {'error': 'UNAUTHORISED_REQUEST', 'message': 'You have reached your request limit' }}}
+                                        no_request_json = {'id': request_json['id'], 'success': False, 'status': 403, 'payload': { 'content': {'error': 'UNAUTHORISED_REQUEST', 'message': 'You have reached your request limit' }}}
                                         Respond(no_request_json, UDPServer)
                                 else:
                                         r = requests.get(request_json['body']['path'], timeout = request_json['timeout'])
@@ -176,7 +176,7 @@ def HTTPRequest(request_json, address):
 
                         try:
                                 if(nonauthClient[address]['requests'] -1 < 1):
-                                        no_request_json = {'id': request_json['id'], 'success': False, 'Status': 403, 'payload': { 'content': {'ERROR': 'UNAUTHORISED_REQUEST', 'message': 'You have reached your request limit' }}}
+                                        no_request_json = {'id': request_json['id'], 'success': False, 'status': 403, 'payload': { 'content': {'ERROR': 'UNAUTHORISED_REQUEST', 'message': 'You have reached your request limit' }}}
                                         Respond(no_request_json, UDPServer)
                                 else:
                                         r = requests.post(request_json['body']['path'], data = request_json['body']['body']['username'] , timeout = request_json['timeout'])
